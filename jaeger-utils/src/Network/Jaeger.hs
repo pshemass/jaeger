@@ -12,47 +12,83 @@
 --
 -- Utilities to connect to and interact with a Jaeger agent.
 
-module Network.Jaeger (
+module Network.Jaeger
+  (
     -- * Connecting to the Jaeger agent
-      withJaeger
-    , withJaegerLocal
-    , withJaegerEnv
+    withJaeger
+  , withJaegerLocal
+  , withJaegerEnv
     -- ** Plumbing
-    , Network.Jaeger.connect
-    , connectLocal
-    , connectEnv
-    , close
+  , Network.Jaeger.connect
+  , connectLocal
+  , connectEnv
+  , close
     -- * Data transfer
-    , sendBatch
-    ) where
+  , sendBatch
+  )
+where
 
-import Control.Monad (join, void)
-import Data.Word (Word16)
-import System.Environment (getEnv)
+import           Control.Monad                  ( join
+                                                , void
+                                                )
+import           Data.Word                      ( Word16 )
+import           System.Environment             ( getEnv )
 
-import Network.Socket (
-    AddrInfo(addrAddress, addrFamily, addrProtocol, addrSocketType),
-    Socket, SocketType(Datagram),
-    close, connect, defaultHints, getAddrInfo, socket, withSocketsDo)
-import Network.Socket.ByteString (send)
+import           Network.Socket                 ( AddrInfo
+                                                  ( addrAddress
+                                                  , addrFamily
+                                                  , addrProtocol
+                                                  , addrSocketType
+                                                  )
+                                                , Socket
+                                                , SocketType(Datagram)
+                                                , Family (AF_INET)
+                                                , close
+                                                , connect
+                                                , defaultHints
+                                                , getAddrInfo
+                                                , socket
+                                                , withSocketsDo
+                                                )
+import           Network.Socket.ByteString      ( send )
 
-import System.IO.Error (userError)
 
-import Control.Monad.Base (MonadBase, liftBase)
+import           System.IO.Error                ( userError )
 
-import Control.Exception.Safe (MonadMask, bracket, throwIO)
+import           Control.Monad.Base             ( MonadBase
+                                                , liftBase
+                                                )
 
-import Jaeger.Types (Batch, compactProtocol, emitBatch, encodeMessage)
+import           Control.Exception.Safe         ( MonadMask
+                                                , bracket
+                                                , throwIO
+                                                )
+
+import           Jaeger.Types                   ( Batch
+                                                , compactProtocol
+                                                , emitBatch
+                                                , encodeMessage
+                                                )
 
 -- | Connect to the Jaeger agent on given host and port.
 --
 -- /Note:/ This throws when address resolution fails.
 connect :: String -> Word16 -> IO Socket
-connect host port = withSocketsDo $
-    getAddrInfo (Just $ defaultHints { addrSocketType = Datagram }) (Just host) (Just $ show port) >>= \case
-        [] -> throwIO $ userError "Network.Jaeger.connect: Failed to lookup localhost"
-        (addr:_) -> do
-            sock <- socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
+connect host port =
+  withSocketsDo
+    $   getAddrInfo
+          (Just $ defaultHints { addrSocketType = Datagram, addrFamily = AF_INET })
+          (Just host)
+          (Just $ show port)
+    >>= \case
+          [] -> throwIO
+            $ userError "Network.Jaeger.connect: Failed to lookup localhost"
+          (addr : _) -> do
+            _    <- putStrLn $ "addr: " ++ (show $ addrFamily addr)
+            sock <- socket (addrFamily addr)
+                           (addrSocketType addr)
+                           (addrProtocol addr)
+            _ <- putStrLn "blah"
             Network.Socket.connect sock (addrAddress addr)
             return sock
 
@@ -70,11 +106,16 @@ connectLocal = Network.Jaeger.connect "localhost" 6831
 --
 -- Uses 'connect' underneath.
 connectEnv :: IO Socket
-connectEnv = join $ Network.Jaeger.connect <$> getEnv "JAEGER_AGENT_HOST" <*> fmap read (getEnv "JAEGER_AGENT_PORT")
+connectEnv =
+  join $ Network.Jaeger.connect <$> getEnv "JAEGER_AGENT_HOST" <*> fmap
+    read
+    (getEnv "JAEGER_AGENT_PORT")
 
 -- | Create a connection to a Jaeger agent using 'connect', and close when the given action completes.
-withJaeger :: (MonadBase IO m, MonadMask m) => String -> Word16 -> (Socket -> m a) -> m a
-withJaeger host port = bracket (liftBase $ Network.Jaeger.connect host port) (liftBase . close)
+withJaeger
+  :: (MonadBase IO m, MonadMask m) => String -> Word16 -> (Socket -> m a) -> m a
+withJaeger host port =
+  bracket (liftBase $ Network.Jaeger.connect host port) (liftBase . close)
 
 -- | Create a connection to the local Jaeger agent using 'connectLocal', and close when the given action completes.
 withJaegerLocal :: (MonadBase IO m, MonadMask m) => (Socket -> m a) -> m a

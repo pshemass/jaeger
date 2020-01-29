@@ -9,19 +9,10 @@ packages:
 - wai-jaeger
 - servant-jaeger
 - monad-jaeger-metrics-ekg
-- monad-jaeger-metrics-prometheus
 
-resolver: lts-9.10
+resolver: lts-14.22
 
 extra-deps:
-- lens-properties-4.11
-- thrift-0.10.0
-- dump-core-0.1.3.1
-- monadLib-3.7.3
-- prometheus-effect-1.0.0
-- servant-0.12
-- servant-server-0.12
-- servant-client-core-0.12
-- servant-client-0.12
+- pinch-0.3.5.0@sha256:0da4940423cdb4c2536aabf0df5979eff0e137132b3686405c3758418fd08589,3931
 
 allow-newer: true

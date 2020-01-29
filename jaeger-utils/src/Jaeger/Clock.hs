@@ -16,7 +16,7 @@ module Jaeger.Clock (
     , diffTimeStamp
     ) where
 
-import System.Clock (Clock(Boottime, Realtime), TimeSpec, diffTimeSpec, getTime)
+import System.Clock (Clock(Monotonic, Realtime), TimeSpec, diffTimeSpec, getTime)
 
 -- | Retrieve the current wall-clock time (used for e.g. 'Jaeger.Types.spanStartTime').
 --
@@ -36,7 +36,7 @@ newtype TimeStamp = TimeStamp { getTimeStamp :: TimeSpec }
 -- This clock is not affected by NTP or other time changes and jumps, but has no
 -- value related to wall-clock time.
 monotonicTime :: IO TimeStamp
-monotonicTime = TimeStamp <$> getTime Boottime
+monotonicTime = TimeStamp <$> getTime Monotonic 
 {-# INLINE monotonicTime #-}
 
 -- | Calculate the absolute difference between two 'TimeStamp's.

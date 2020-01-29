@@ -14,7 +14,7 @@ module Network.Ifaddrs (
 
 import Data.Bits ((.&.))
 import Data.Int (Int32)
-import Data.Word (Word16, Word32)
+import Data.Word (Word16, Word32, Word8)
 
 import Foreign.C.Error (throwErrnoIfMinus1_)
 import Foreign.C.String (peekCString)

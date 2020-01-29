@@ -45,7 +45,7 @@ import Jaeger.Process (process)
 import Jaeger.Sampler (constSampler, probabilisticSampler)
 import Jaeger.Types (longTag, processServiceName)
 
-import Network.Jaeger (withJaegerLocal)
+import Network.Jaeger (withJaegerLocal, withJaegerEnv)
 
 import Servant.Jaeger.Client (ClientEnv(ClientEnv), client, parseBaseUrl, runClientT)
 import Servant.Jaeger.Server (JaegerServerT, serve)
@@ -94,7 +94,7 @@ runServer = do
     ekg <- forkServer "localhost" 8081
     putStrLn "EKG running on http://localhost:8081"
 
-    withJaegerLocal $ \sock -> do
+    withJaegerEnv $ \sock -> do
         p <- process
         let sampler = probabilisticSampler 0.5
         metrics <- mkMetrics $ serverMetricStore ekg
@@ -115,7 +115,7 @@ runClient = withJaegerLocal $ \sock -> process >>= \proc -> do
     runNoJaegerMetrics $ (\act -> runJaegerT act sock proc' (constSampler True)) $ flip runJaegerTraceT "client" $ do
         env <- ClientEnv <$> liftIO (newManager defaultManagerSettings)
                          <*> parseBaseUrl "http://localhost:8080/"
-        res <-  flip runClientT env $ do
+        res <-  flip runClientT (env Nothing) $ do
             r1 <- getValue
             postValue (2 * r1)
             r2 <- getValue

@@ -72,9 +72,9 @@ import Network.HTTP.Types.Status (statusCode)
 import Servant.Client (ClientEnv(..), runClientM)
 import Servant.Client.Internal.HttpClient (requestToClientRequest)
 import Servant.Client.Core (
-    Client, ClientLike(mkClient), HasClient,
-    RunClient(catchServantError, runRequest, throwServantError),
-    ServantError, addHeader, clientIn, requestMethod, requestPath)
+    Client, HasClient,
+    RunClient(runRequest, throwClientError),
+    addHeader, clientIn, requestMethod, requestPath)
 import Servant.Client.Core.Reexport
 
 import Control.Monad.Jaeger.Class (MonadJaeger)
@@ -111,8 +111,8 @@ mapClientT f = ClientT . mapReaderT f . unClientT
 deriving instance MonadRWS r w s m => MonadRWS r w s (ClientT m)
 
 -- | Try clients in order, last error is preserved.
-instance MonadCatch m => Alt (ClientT m) where
-  a <!> b = catch a (\(_ :: ServantError) -> b)
+--instance MonadCatch m => Alt (ClientT m) where
+--  a <!> b = catch a (\(_ :: ServantError) -> b)
 
 instance MonadTransControl ClientT where
     type StT ClientT a = StT (ReaderT ClientEnv) a
@@ -141,7 +141,7 @@ instance (MonadBase IO m, MonadMask m, MonadJaegerTrace m) => RunClient (ClientT
             case res of
                 Left exc -> do
                     case exc of
-                        FailureResponse res' -> tagSC res'
+                        FailureResponse _ res' -> tagSC res'
                         DecodeFailure _ res' -> tagSC res'
                         UnsupportedContentType _ res' -> tagSC res'
                         InvalidContentTypeHeader res' -> tagSC res'
@@ -151,11 +151,11 @@ instance (MonadBase IO m, MonadMask m, MonadJaegerTrace m) => RunClient (ClientT
                     tagSC res'
                     pure res'
 
-    throwServantError = throw
-    catchServantError = catch
+    throwClientError = throw
+    -- catchServantError = catch
 
-instance ClientLike (ClientT m a) (ClientT m a) where
-    mkClient = id
+-- instance ClientLike (ClientT m a) (ClientT m a) where
+--    mkClient = id
 
 -- | Generate a set of client functions for an API.
 --
@@ -169,5 +169,5 @@ client api proxy = case proxy of
     (Proxy :: Proxy m) -> clientIn api (Proxy :: Proxy (ClientT m))
 
 -- | Run a 'ClientT' action, using the given 'ClientEnv' environment.
-runClientT :: MonadCatch m => ClientT m a -> ClientEnv -> m (Either ServantError a)
+runClientT :: MonadCatch m => ClientT m a -> ClientEnv -> m (Either ClientError a)
 runClientT ct env = try $ flip runReaderT env $ unClientT ct
