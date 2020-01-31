@@ -68,8 +68,8 @@ Library
       -fno-warn-redundant-constraints
 
 Executable monad-jaeger-example
-  Build-Depends:  base >= 4.9 && < 4.11
-                , containers >= 0.5 && < 0.6
+  Build-Depends:  base >= 4.9 && < 4.13
+                , containers >= 0.5 && < 0.9
                 , jaeger-sampler >= 0.0 && < 0.1
                 , jaeger-types >= 0.0 && < 0.1
                 , jaeger-utils >= 0.0 && < 0.1

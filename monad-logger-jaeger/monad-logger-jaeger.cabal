@@ -48,7 +48,7 @@ Library
     -g
 
 Executable monad-logger-jaeger-example
-  Build-Depends: base >= 4.9 && < 4.11
+  Build-Depends: base >= 4.9 && < 4.13
                , jaeger-sampler >= 0.0 && < 0.1
                , jaeger-utils >= 0.0 && < 0.1
                , lifted-base >= 0.2 && < 0.3
