@@ -88,7 +88,7 @@ Test-Suite jaeger-types-test
                 , tasty-hspec >= 1.1 && < 1.2
                 , tasty-quickcheck >= 0.8 && < 0.10
                 , text >= 1.2 && < 1.3
-                , thrift >= 0.10 && < 0.11
+                , thrift == 0.13.0
                 , unordered-containers >= 0.2 && < 0.3
                 , vector >= 0.12 && < 0.13
                 , jaeger-types

@@ -84,11 +84,9 @@ connect host port =
           [] -> throwIO
             $ userError "Network.Jaeger.connect: Failed to lookup localhost"
           (addr : _) -> do
-            _    <- putStrLn $ "addr: " ++ (show $ addrFamily addr)
             sock <- socket (addrFamily addr)
                            (addrSocketType addr)
                            (addrProtocol addr)
-            _ <- putStrLn "blah"
             Network.Socket.connect sock (addrAddress addr)
             return sock
 

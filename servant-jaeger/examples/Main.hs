@@ -94,7 +94,7 @@ runServer = do
     ekg <- forkServer "localhost" 8081
     putStrLn "EKG running on http://localhost:8081"
 
-    withJaegerEnv $ \sock -> do
+    withJaegerLocal $ \sock -> do
         p <- process
         let sampler = probabilisticSampler 0.5
         metrics <- mkMetrics $ serverMetricStore ekg
