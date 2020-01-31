@@ -25,9 +25,9 @@ Source-Repository head
 
 Library
   Exposed-Modules: Jaeger.Sampler
-  Build-Depends:   base >= 4.9 && < 4.11
+  Build-Depends:   base >= 4.9 && < 4.13
                  , jaeger-types >= 0.0 && < 0.1
-                 , lens >= 4.15 && < 4.16
+                 , lens >= 4.15 && < 4.18
                  , text >= 1.2 && < 1.3
   Hs-Source-Dirs:  src
   Ghc-Options:
